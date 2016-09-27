@@ -1,0 +1,20 @@
+{
+  "name": "jeefo-mysql",
+  "version": "0.0.2",
+  "description": "MySQL connection instances for each table. I had annoyed enough for MySQL Deadlocks.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com:je3f0o/node-jeefo-mysql.git"
+  },
+  "keywords": [
+    "jeefo",
+    "mysql"
+  ],
+  "author": "je3f0o",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.0.1",
+    "mysql": "^2.11.1"
+  }
+}
