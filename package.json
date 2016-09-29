@@ -1,20 +1,32 @@
 {
   "name": "jeefo-mysql",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Very simple MySQL connection instances for each table. I had annoyed enough for MySQL Deadlocks.",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com:je3f0o/node-jeefo-mysql.git"
+    "url": "git://github.com/%3Aje3f0o/node-jeefo-mysql.git"
   },
   "keywords": [
     "jeefo",
     "mysql"
   ],
-  "author": "je3f0o",
+  "author": {
+    "name": "je3f0o"
+  },
   "license": "MIT",
   "dependencies": {
     "async": "^2.0.1",
     "mysql": "^2.11.1"
-  }
+  },
+  "gitHead": "af1ac5be8efc56b0bb67c83a2942e6dba7afc302",
+  "bugs": {
+    "url": "https://github.com/%3Aje3f0o/node-jeefo-mysql/issues"
+  },
+  "readme": "ERROR: No README data found!",
+  "homepage": "https://github.com/%3Aje3f0o/node-jeefo-mysql#readme",
+  "_id": "jeefo-mysql@0.0.3",
+  "scripts": {},
+  "_shasum": "2f5d3e9a5458df0a7471f27ed09580798ff44a36",
+  "_from": "jeefo-mysql@*"
 }
