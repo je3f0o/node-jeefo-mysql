@@ -91,21 +91,11 @@ let build_where = (definition, values) => {
 
 	let _where = where(definition, values);
 
-	if (and_groups || or_groups) {
-		_where = `(${ _where })`;
-	}
-
 	if (and_groups) {
-		if (_where) {
-			_where += " AND ";
-		}
-		_where += and_groups;
+		_where += ` AND (${ and_groups })`;
 	}
 	if (or_groups) {
-		if (_where) {
-			_where += " OR ";
-		}
-		_where += or_groups;
+		_where += ` AND (${ or_groups })`;
 	}
 
 	return _where ? ` WHERE ${ _where }` : '';
