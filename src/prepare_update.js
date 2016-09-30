@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : prepare_update.js
 * Created at  : 2016-09-27
-* Updated at  : 2016-09-29
+* Updated at  : 2016-10-01
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -28,11 +28,11 @@ let get_placeholders = (object, values) => {
 		key = "`0`".replace(0, key);
 
 		if (is_null(value)) {
-			return `${ key } = NULL, `;
+			return `${ result }${ key } = NULL, `;
 		}
 
 		values.push(value);
-		return result + `${ key }= ?, `;
+		return `${ result }${ key }= ?, `;
 	}, '');
 };
 
