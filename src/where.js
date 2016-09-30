@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : where.js
 * Created at  : 2016-09-28
-* Updated at  : 2016-09-29
+* Updated at  : 2016-10-01
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -90,6 +90,11 @@ let build_where = (definition, values) => {
 	}).join(" OR ");
 
 	let _where = where(definition, values);
+
+	if (and_groups || or_groups) {
+		_where = `(${ _where })`;
+	}
+
 	if (and_groups) {
 		if (_where) {
 			_where += " AND ";
