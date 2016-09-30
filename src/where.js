@@ -78,22 +78,20 @@ let where = (definition, values) => {
 };
 
 let build_where = (definition, values) => {
-	let and_groups = definition.$groups    || []
-	let or_groups  = definition.$or_groups || []
+	let _where = where(definition, values);
 
-	and_groups = and_groups.map(group => {
+	let and_groups = (definition.$groups || []).map(group => {
 		return `(${ where(group, values) })`;
 	}).join(" AND ");
-
-	or_groups = or_groups.map(group => {
-		return `(${ where(group, values) })`;
-	}).join(" OR ");
-
-	let _where = where(definition, values);
 
 	if (and_groups) {
 		_where += ` AND (${ and_groups })`;
 	}
+
+	let or_groups = (definition.$or_groups || []).map(group => {
+		return `(${ where(group, values) })`;
+	}).join(" OR ");
+
 	if (or_groups) {
 		_where += ` AND (${ or_groups })`;
 	}
