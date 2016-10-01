@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2016-09-27
-* Updated at  : 2016-09-30
+* Updated at  : 2016-10-02
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -109,6 +109,10 @@ let update_curry = (table, require_callback, func) => {
 };
 
 let insert_curry = (table, require_callback, func) => {
+	if (is_function(require_callback)) {
+		func = require_callback;
+	}
+
 	return (table_name, data, callback) => {
 		if (is_object(table_name)) {
 			callback   = data;
