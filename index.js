@@ -37,10 +37,8 @@ let noop = () => {};
 // curry functions
 let filter_curry = (table, func) => {
 	return (table_name, data, callback) => {
-		if (is_function(data)) {
-			callback = data;
-		}
 		if (is_object(table_name)) {
+			callback   = data;
 			data       = table_name;
 			table_name = table;
 		}
