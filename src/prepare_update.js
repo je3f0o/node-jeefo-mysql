@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : prepare_update.js
 * Created at  : 2016-09-27
-* Updated at  : 2016-10-01
+* Updated at  : 2016-10-02
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -16,25 +16,12 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 //ignore:end
 
 let jeefo             = require("jeefo"),
+	map               = jeefo.map,
 	$where            = require("./where"),
-	is_null           = jeefo.is_null,
 	sprintf           = jeefo.sprintf,
 	prepare_select    = require("./prepare_select"),
+	get_placeholders  = require("./placeholders"),
 	escape_identifier = require("mysql").escapeId;
-
-let get_placeholders = (object, values) => {
-	return Object.keys(object).reduce((result, key) => {
-		let value = object[key];
-		key = "`0`".replace(0, key);
-
-		if (is_null(value)) {
-			return `${ result }${ key } = NULL, `;
-		}
-
-		values.push(value);
-		return `${ result }${ key }= ?, `;
-	}, '');
-};
 
 module.exports = (table, data, where, return_back) => {
 	let values = [];
@@ -53,7 +40,7 @@ module.exports = (table, data, where, return_back) => {
 	if (return_back) {
 		let $select = Object.keys(data);
 		$select.push("updated_at");
-		let copy_where = jeefo.map(where, { $select });
+		let copy_where = map(where, { $select });
 
 		let select = prepare_select(table, copy_where);
 		query += ` ${ select.query } COMMIT;`;
