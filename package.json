@@ -12,7 +12,7 @@
         "save_version": "git add . && git c \"v$npm_package_version\" && git p",
         "jeefo_publish": "node node_modules/@jeefo/publish/publish.js"
     },
-    "homepage": "https://github.com/%3Aje3f0o/node-jeefo-mysql#readme",
+    "homepage": "https://github.com/~je3f0o/node-jeefo-mysql",
     "repository": {
         "type": "git",
         "url": "git://github.com/~je3f0o/node-jeefo-mysql.git"
