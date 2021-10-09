@@ -229,7 +229,9 @@ const exit_events = [
     "uncaughtException"
 ];
 
+let is_cleaning;
 const cleanup_event = async exit_code => {
+    if (is_cleaning) return;
     if (exit_code === 0) return;
     if (Object.keys(processes).length === 0) return;
 
@@ -237,6 +239,7 @@ const cleanup_event = async exit_code => {
 
     console.log("[Jeefo MySQL] cleaning please wait...");
     process.stdin.resume();
+    is_cleaning = true;
 
     const keys = Object.keys(processes);
     for (const key of keys) {
