@@ -134,29 +134,33 @@ class JeefoMySQLConnection {
         await this.exec(`DELETE FROM ${tbl}${where}${order}${limit};`);
     }
 
+    prepare_fields(fields) {
+        if (is.string(fields)) fields = [fields];
+        return fields.map(f => mysql.escapeId(f)).join(", ");
+    }
+
     prepare_set(data) {
         return Object.keys(data).map(key => {
             let value = data[key];
             if (is.object(value) && !(value instanceof Date)) {
-                value = `'${JSON.stringify(value)}'`;
+                value = mysql.escape(JSON.stringify(value));
+            } else if (is.string(value)) {
+                value = mysql.escape(value);
             }
+            key = mysql.escapeId(key);
             return `${key} = ${value}`;
         }).join(", ");
-    }
-
-    prepare_fields(fields) {
-        if (is.string(fields)) fields = [fields];
-        return fields.join(", ");
     }
 
     prepare_where(where) {
         return Object.keys(where).map(key => {
             let value = where[key];
             if (is.object(value) && !(value instanceof Date)) {
-                value = `'${JSON.stringify(value)}'`;
-            } else if (typeof value === "string") {
-                value = mysql.escapeId(value);
+                value = mysql.escape(JSON.stringify(value));
+            } else if (is.string(value)) {
+                value = mysql.escape(value);
             }
+            key = mysql.escapeId(key);
             return `${key} = ${value}`;
         }).join(" AND ");
     }
