@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
-* File Name   : connect.js
+* File Name   : index.js
 * Created at  : 2021-10-09
-* Updated at  : 2021-10-09
+* Updated at  : 2021-10-10
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -74,7 +74,8 @@ class JeefoMySQLConnection {
     }
 
     async select(where, options = {}) {
-        const fields = options.fields ? options.fields.join(", ") : '*';
+        let {fields} = options;
+        fields = fields ? this.prepare_fields(fields) : '*';
 
         where = where ? ` WHERE ${this.prepare_where(where)}` : '';
 
@@ -143,6 +144,11 @@ class JeefoMySQLConnection {
         }).join(", ");
     }
 
+    prepare_fields(fields) {
+        if (is.string(fields)) fields = [fields];
+        return fields.join(", ");
+    }
+
     prepare_where(where) {
         return Object.keys(where).map(key => {
             let value = where[key];
@@ -171,10 +177,6 @@ class JeefoMySQLConnection {
         return await this.select(where, options);
     }
 
-    async find(where, options) {
-        return await this.select(where, options);
-    }
-
     async reset() {
         const tbl = this.table_name;
         const {results: [result]} = await this.exec(`SHOW CREATE TABLE ${tbl}`);
@@ -190,15 +192,8 @@ class JeefoMySQLConnection {
         }
     }
 
-    async delete_all() {
-        await this.delete();
-    }
-
-    async get_all() {
-        const query = `SELECT * FROM ${this.table_name};`;
-        const {results} = await this.exec(query);
-        return results;
-    }
+    get_all()    { return this.select(); }
+    delete_all() { return this.delete(); }
 
     async total() {
         const query = `SELECT COUNT(*) as total FROM ${this.table_name};`;

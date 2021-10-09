@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : test.js
 * Created at  : 2021-10-09
-* Updated at  : 2021-10-09
+* Updated at  : 2021-10-10
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -15,7 +15,15 @@
 
 // ignore:end
 
-const mysql = require("./connect.js");
+const mysql = require("./index.js");
+
+function assert(condition, message) {
+    if (condition) {
+        console.log(`ASSERT '${message}' passed.`);
+    } else {
+        throw new Error(`ASSERT '${message}' failed.`);
+    }
+}
 
 (async () => {
     await mysql.config_load(`${process.env.HOME}/configs/database.json`);
@@ -32,11 +40,10 @@ const mysql = require("./connect.js");
 
     const results = await process_db.get_all();
     let total = await process_db.total();
-    console.log(results);
-    console.log(total);
+    assert(results.length === total, "results.length === total");
 
     await process_db.delete_all();
     total = await process_db.total();
-    console.log(total);
+    assert(total === 0, "total length = 0");
 
 })().catch(console.error.bind(console));
