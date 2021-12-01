@@ -168,7 +168,7 @@ class JeefoMySQLConnection {
                 if (err) return reject(err);
 
                 resolve({results, fields});
-                this.timeout_id = setTimeout(() => this.end(), 10);
+                this.timeout_id = setTimeout(() => this.end(), 10000);
             });
         });
     }
