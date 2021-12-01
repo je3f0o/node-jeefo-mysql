@@ -26,24 +26,21 @@ let default_config = null;
 
 class JeefoMySQLConnection {
     constructor(table_name, config) {
-        if (! is.object(config)) {
-            throw new TypeError("Invalid argument");
-        }
+        if (! is.object(config)) throw new TypeError("Invalid argument");
 
-        this.table_name   = table_name;
-        this.connection   = mysql.createConnection(config);
-        this.is_connected = false;
+        this.config     = () => config;
+        this.table_name = table_name;
     }
 
     connect() {
+        if (this.connection) return;
         if (this.pending) return this.pending;
 
         this.pending = new Promise((resolve, reject) => {
+            this.connection = mysql.createConnection(this.config());
             this.connection.connect(err => {
                 this.pending = null;
-                if (err) return reject(err);
-                this.is_connected = true;
-                resolve();
+                err ? reject(err) : resolve();
                 //const {threadId} = this.connection;
                 //console.log(`[Jeefo MySQL] connceted thread id: [${threadId}].`);
             });
@@ -54,7 +51,6 @@ class JeefoMySQLConnection {
 
     end() {
         return new Promise((resolve, reject) => this.connection.end(err => {
-            this.is_connected = false;
             err ? reject(err) : resolve();
             //const {threadId} = this.connection;
             //console.log(`[Jeefo MySQL] conncetion thread [${threadId}] is closed.`);
@@ -63,7 +59,7 @@ class JeefoMySQLConnection {
 
     destroy() {
         this.connection.destroy();
-        this.is_connected = false;
+        this.connection = null;
     }
 
     async select(where, options = {}) {
@@ -160,7 +156,7 @@ class JeefoMySQLConnection {
 
     exec(query, values = []) {
         return new Promise(async (resolve, reject) => {
-            if (!this.is_connected) await this.connect();
+            if (!this.connection) await this.connect();
 
             //console.log(`[Jeefo MySQL] exec query: ${query}`);
             this.connection.query(query, values, (err, results, fields) => {
