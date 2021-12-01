@@ -158,13 +158,13 @@ class JeefoMySQLConnection {
         }).join(" AND ");
     }
 
-    exec(query) {
+    exec(query, values = []) {
         clearTimeout(this.timeout_id);
         return new Promise(async (resolve, reject) => {
             if (!this.is_connected) await this.connect();
 
             //console.log(`[Jeefo MySQL] exec query: ${query}`);
-            this.connection.query(query, (err, results, fields) => {
+            this.connection.query(query, values, (err, results, fields) => {
                 if (err) return reject(err);
 
                 resolve({results, fields});
