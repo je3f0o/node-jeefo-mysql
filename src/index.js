@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2021-10-09
-* Updated at  : 2021-10-10
+* Updated at  : 2021-12-02
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -16,8 +16,8 @@
 // ignore:end
 
 const fs        = require("@jeefo/fs");
-const mysql     = require("mysql");
 const is        = require("@jeefo/utils/is");
+const mysql     = require("mysql");
 const processes = Object.create(null);
 
 const AUTO_INC_REGEXP = /AUTO_INCREMENT=\d+/;
@@ -33,11 +33,6 @@ class JeefoMySQLConnection {
         this.table_name   = table_name;
         this.connection   = mysql.createConnection(config);
         this.is_connected = false;
-
-
-        if (config.auto_connect_enabled) {
-            this.connect();
-        }
     }
 
     connect() {
@@ -45,11 +40,12 @@ class JeefoMySQLConnection {
 
         this.pending = new Promise((resolve, reject) => {
             this.connection.connect(err => {
+                this.pending = null;
                 if (err) return reject(err);
-                const {threadId} = this.connection;
                 this.is_connected = true;
                 resolve();
-                console.log(`[Jeefo MySQL] connceted thread id: [${threadId}].`);
+                //const {threadId} = this.connection;
+                //console.log(`[Jeefo MySQL] connceted thread id: [${threadId}].`);
             });
         });
 
@@ -57,20 +53,17 @@ class JeefoMySQLConnection {
     }
 
     end() {
-        return new Promise((resolve, reject) => {
-            this.connection.end(err => {
-                if (err) return reject(err);
-
-                const {threadId} = this.connection;
-                console.log(`[Jeefo MySQL] conncetion thread [${threadId}] is closed.`);
-                this.pending = null;
-                resolve();
-            });
-        });
+        return new Promise((resolve, reject) => this.connection.end(err => {
+            this.is_connected = false;
+            err ? reject(err) : resolve();
+            //const {threadId} = this.connection;
+            //console.log(`[Jeefo MySQL] conncetion thread [${threadId}] is closed.`);
+        }));
     }
 
     destroy() {
         this.connection.destroy();
+        this.is_connected = false;
     }
 
     async select(where, options = {}) {
@@ -166,12 +159,16 @@ class JeefoMySQLConnection {
     }
 
     exec(query) {
+        clearTimeout(this.timeout_id);
         return new Promise(async (resolve, reject) => {
-            console.log(`[Jeefo MySQL] exec query: ${query}`);
+            if (!this.is_connected) await this.connect();
+
+            //console.log(`[Jeefo MySQL] exec query: ${query}`);
             this.connection.query(query, (err, results, fields) => {
                 if (err) return reject(err);
 
                 resolve({results, fields});
+                this.timeout_id = setTimeout(() => this.end(), 10);
             });
         });
     }
@@ -206,24 +203,25 @@ class JeefoMySQLConnection {
     }
 }
 
-function get_database(table_name, config = default_config) {
+function get_connection(table_name, config = default_config) {
     return (
         processes[table_name] ||
         (processes[table_name] = new JeefoMySQLConnection(table_name, config))
     );
 }
 
-get_database.config = async cfg => {
-    default_config = Object.assign(Object.create(null), cfg);
+get_connection.config = cfg => {
+    default_config = Object.assign({}, cfg);
     if (default_config.auto_connect_enabled === void 0) {
         default_config.auto_connect_enabled = true;
     }
 };
 
-get_database.config_load = async filepath => {
-    get_database.config(await fs.load_json(filepath));
+get_connection.load_config = async filepath => {
+    get_connection.config(await fs.load_json(filepath));
 };
 
+/*
 const exit_events = [
     "exit",
     "SIGINT",
@@ -259,5 +257,6 @@ const cleanup_event = async exit_code => {
 for (const event_name of exit_events) {
     process.on(event_name, cleanup_event);
 }
+*/
 
-module.exports = get_database;
+module.exports = get_connection;
