@@ -159,6 +159,7 @@ class JeefoMySQLConnection {
     }
 
     exec(query, values = []) {
+        clearTimeout(this.timeout_id);
         return new Promise(async (resolve, reject) => {
             if (!this.is_connected) await this.connect();
 
@@ -167,8 +168,7 @@ class JeefoMySQLConnection {
                 if (err) return reject(err);
 
                 resolve({results, fields});
-                clearTimeout(this.timeout_id);
-                this.timeout_id = setTimeout(() => this.end(), 10000);
+                this.timeout_id = setTimeout(() => this.destroy(), 10000);
             });
         });
     }
