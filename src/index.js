@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2021-10-09
-* Updated at  : 2021-12-02
+* Updated at  : 2021-12-16
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -43,6 +43,10 @@ class JeefoMySQLConnection {
                 err ? reject(err) : resolve();
                 //const {threadId} = this.connection;
                 //console.log(`[Jeefo MySQL] connceted thread id: [${threadId}].`);
+            });
+
+            this.connection.on("error", err => {
+              console.error("MYSQL Error:", err);
             });
         });
 
