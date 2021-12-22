@@ -71,7 +71,7 @@ class JeefoMySQLConnection {
         fields = fields ? this.prepare_fields(fields) : '*';
 
         where = this.prepare_where(where);
-        const values = where;
+        const {values} = where;
         where = where.query;
 
         let order = '';
@@ -114,7 +114,7 @@ class JeefoMySQLConnection {
 
     async delete(where, options = {}) {
         where = this.prepare_where(where);
-        const values = where;
+        const {values} = where;
         where = where.query;
 
         let order = '';
@@ -133,7 +133,7 @@ class JeefoMySQLConnection {
 
     async delete_first(where, options = {}) {
         where = this.prepare_where(where);
-        const values = where;
+        const {values} = where;
         where = where.query;
 
         let order = '';
