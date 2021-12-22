@@ -138,8 +138,6 @@ class JeefoMySQLConnection {
             let value = data[key];
             if (is.object(value) && !(value instanceof Date)) {
                 value = mysql.escape(JSON.stringify(value));
-            } else if (is.string(value)) {
-                value = mysql.escape(value);
             }
             values.push(value);
             return `${mysql.escapeId(key)} = ?`;
