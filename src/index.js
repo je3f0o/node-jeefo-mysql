@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2021-10-09
-* Updated at  : 2021-12-16
+* Updated at  : 2021-12-22
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -46,7 +46,7 @@ class JeefoMySQLConnection {
             });
 
             this.connection.on("error", err => {
-              console.error("MYSQL Error:", err);
+                console.error("MYSQL Error:", err);
             });
         });
 
@@ -92,10 +92,10 @@ class JeefoMySQLConnection {
     }
 
     async insert(data, return_back) {
-        const fields = this.prepare_set(data);
+        const {fields, values} = this.prepare_set(data);
         const query  = `INSERT INTO ${this.table_name} SET ${fields};`;
 
-        const res = await this.exec(query);
+        const res = await this.exec(query, values);
 
         return (
             return_back
@@ -133,16 +133,19 @@ class JeefoMySQLConnection {
     }
 
     prepare_set(data) {
-        return Object.keys(data).map(key => {
+        const values = [];
+        const fields = Object.keys(data).map(key => {
             let value = data[key];
             if (is.object(value) && !(value instanceof Date)) {
                 value = mysql.escape(JSON.stringify(value));
             } else if (is.string(value)) {
                 value = mysql.escape(value);
             }
-            key = mysql.escapeId(key);
-            return `${key} = ${value}`;
+            values.push(value);
+            return `${mysql.escapeId(key)} = ?`;
         }).join(", ");
+
+        return {fields, values};
     }
 
     prepare_where(where) {
