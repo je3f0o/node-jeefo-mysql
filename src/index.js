@@ -70,7 +70,9 @@ class JeefoMySQLConnection {
         let {fields} = options;
         fields = fields ? this.prepare_fields(fields) : '*';
 
-        where = where ? ` WHERE ${this.prepare_where(where)}` : '';
+        where = this.prepare_where(where);
+        const values = where;
+        where = where.query;
 
         let order = '';
         if (is.string(options.order)) {
@@ -84,7 +86,7 @@ class JeefoMySQLConnection {
 
         const tbl   = this.table_name;
         const query = `SELECT ${fields} FROM ${tbl}${where}${order}${limit};`;
-        const res = await this.exec(query);
+        const res = await this.exec(query, values);
 
         if (options.limit === 1) return res.results[0];
 
@@ -111,7 +113,9 @@ class JeefoMySQLConnection {
     */
 
     async delete(where, options = {}) {
-        where = where ? ` WHERE ${this.prepare_where(where)}` : '';
+        where = this.prepare_where(where);
+        const values = where;
+        where = where.query;
 
         let order = '';
         if (is.string(options.order)) {
@@ -124,7 +128,22 @@ class JeefoMySQLConnection {
         }
 
         const tbl = this.table_name;
-        await this.exec(`DELETE FROM ${tbl}${where}${order}${limit};`);
+        await this.exec(`DELETE FROM ${tbl}${where}${order}${limit};`, values);
+    }
+
+    async delete_first(where, options = {}) {
+        where = this.prepare_where(where);
+        const values = where;
+        where = where.query;
+
+        let order = '';
+        if (is.string(options.order)) {
+            order = ` ORDER BY ${options.order}`;
+        }
+
+        const tbl   = this.table_name;
+        const limit = ` LIMIT 1`;
+        await this.exec(`DELETE FROM ${tbl}${where}${order}${limit};`, values);
     }
 
     prepare_fields(fields) {
@@ -147,16 +166,20 @@ class JeefoMySQLConnection {
     }
 
     prepare_where(where) {
-        return Object.keys(where).map(key => {
+        const values = [];
+        if (!where) return {query: '', values};
+
+        const conditions = Object.keys(where).map(key => {
             let value = where[key];
             if (is.object(value) && !(value instanceof Date)) {
                 value = mysql.escape(JSON.stringify(value));
-            } else if (is.string(value)) {
-                value = mysql.escape(value);
             }
-            key = mysql.escapeId(key);
-            return `${key} = ${value}`;
+            values.push(value);
+            return `${mysql.escapeId(key)} = ?`;
         }).join(" AND ");
+
+        const query = ` WHERE ${conditions}`;
+        return {query, values};
     }
 
     exec(query, values = []) {
