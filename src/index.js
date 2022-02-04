@@ -87,8 +87,10 @@ class JeefoMySQLConnection {
 
     this.pending = new Promise(async (resolve, reject) => {
       while (this.connection_error_counter < config.max_retry) {
-        const counter = this.connection_error_counter + 1;
-        console.error(`[Jeefo MySQL] Trying to reconnect: ${counter}`);
+        if (this.connection_error_counter) {
+          const counter = this.connection_error_counter + 1;
+          console.error(`[Jeefo MySQL] Trying to reconnect: ${counter}`);
+        }
         try {
           const connection = await async_connect(config);
           mock_query(this, connection, config);
