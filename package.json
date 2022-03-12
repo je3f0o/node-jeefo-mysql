@@ -1,6 +1,6 @@
 {
     "name": "jeefo-mysql",
-    "version": "0.0.46",
+    "version": "0.0.47",
     "description": "Very simple MySQL connection instances for each table. I had annoyed enough for MySQL Deadlocks.",
     "main": "index.js",
     "license": "MIT",

@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2021-10-09
-* Updated at  : 2022-02-04
+* Updated at  : 2022-03-12
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -286,14 +286,15 @@ class JeefoMySQLConnection {
   }
 }
 
-function get_connection(table_name, config = default_config) {
- if (named_instances.has(table_name)) {
-  return named_instances.get(table_name);
- }
+function get_connection(table_name, config) {
+  config = {...default_config, ...config};
+  if (named_instances.has(table_name)) {
+   return named_instances.get(table_name);
+  }
 
- const instance = new JeefoMySQLConnection(table_name, config);
- named_instances.set(table_name, instance);
- return instance;
+  const instance = new JeefoMySQLConnection(table_name, config);
+  named_instances.set(table_name, instance);
+  return instance;
 }
 
 get_connection.config = cfg => {
