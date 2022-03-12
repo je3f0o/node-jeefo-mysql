@@ -287,7 +287,7 @@ class JeefoMySQLConnection {
 }
 
 function get_connection(table_name, config) {
-  config = {...default_config, ...config};
+  config = {...default_options, ...default_config, ...config};
   if (named_instances.has(table_name)) {
    return named_instances.get(table_name);
   }
