@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2021-10-09
-* Updated at  : 2022-03-12
+* Updated at  : 2022-03-24
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -25,6 +25,8 @@ const AUTO_INC_REGEXP = /AUTO_INCREMENT=\d+/;
 const default_options = {
   max_retry                 : 10,
   retry_interval            : 2000,
+  idle_timeout              : 10000,
+  is_persistent             : false,
   is_auto_reconnect_enabled : true,
 };
 
@@ -32,12 +34,10 @@ let default_config = null;
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-const async_connect = config => {
-  return new Promise((resolve, reject) => {
-    const connection = mysql.createConnection(config);
-    connection.connect(err => err ? reject(err) : resolve(connection));
-  });
-};
+const async_connect = config => new Promise((resolve, reject) => {
+  const connection = mysql.createConnection(config);
+  connection.connect(err => err ? reject(err) : resolve(connection));
+});
 
 const mock_query = (instance, connection, config) => {
   connection.on("error", err => {
@@ -56,7 +56,7 @@ const mock_query = (instance, connection, config) => {
         connection.query(query, values, callback);
       }
     } else {
-      return new Promise(function(resolve, reject) {
+      return new Promise((resolve, reject) => {
         request.callback = (err, results, fields) => {
           if (err) {
             if (!err.fatal) reject(err);
@@ -71,9 +71,18 @@ const mock_query = (instance, connection, config) => {
   };
 };
 
+class JeefoMysqlQuery {
+  constructor(query, values) {
+    this.query  = query;
+    this.values = values;
+  }
+
+  toString() { return this.query; }
+}
+
 class JeefoMySQLConnection {
   constructor(table_name, config) {
-    if (! is.object(config)) throw new TypeError("Invalid argument");
+    if (!is.object(config)) throw new TypeError("Invalid argument");
     this.state                    = "idle";
     this.queue                    = new Set();
     this.table_name               = table_name;
@@ -134,8 +143,15 @@ class JeefoMySQLConnection {
     const result = await this.connection.jeefo_query(request);
     this.queue.delete(request);
 
-    clearTimeout(this.timeout_id);
-    this.timeout_id = setTimeout(() => this.destroy(), 10000);
+    const config = config_map.get(this);
+    if (!config.is_persistent) {
+      if (config.idle_timeout) {
+        clearTimeout(this.timeout_id);
+        this.timeout_id = setTimeout(() => this.destroy(), config.idle_timeout);
+      } else {
+        this.destroy();
+      }
+    }
 
     return result;
   }
@@ -145,33 +161,22 @@ class JeefoMySQLConnection {
     fields = fields ? this.prepare_fields(fields) : '*';
 
     where = this.prepare_where(where);
-    const {values} = where;
-    where = where.query;
 
-    let order = '';
-    if (is.string(options.order)) {
-      order = ` ORDER BY ${options.order}`;
-    }
+    const order = is.string(options.order) ? ` ORDER BY ${options.order}` : '';
+    const limit = is.number(options.limit) ? ` LIMIT ${options.limit}` : '';
 
-    let limit = '';
-    if (is.number(options.limit)) {
-      limit = ` LIMIT ${options.limit}`;
-    }
+    const tbl       = this.table_name;
+    const query     = `SELECT ${fields} FROM ${tbl}${where}${order}${limit};`;
+    const {results} = await this.exec(query, where.values);
 
-    const tbl   = this.table_name;
-    const query = `SELECT ${fields} FROM ${tbl}${where}${order}${limit};`;
-    const res = await this.exec(query, values);
-
-    if (options.limit === 1) return res.results[0];
-
-    return res.results;
+    return options.limit === 1 ? results[0] : results;
   }
 
   async insert(data, return_back) {
-    const {fields, values} = this.prepare_set(data);
-    const query  = `INSERT INTO ${this.table_name} SET ${fields};`;
+    const set   = this.prepare_set(data);
+    const query = `INSERT INTO ${this.table_name} SET ${set};`;
 
-    const res = await this.exec(query, values);
+    const res = await this.exec(query, set.values);
 
     return (
       return_back
@@ -180,44 +185,49 @@ class JeefoMySQLConnection {
     );
   }
 
-  /*
-  async update(data, where, options) {
-    const query = `UPDATE ${tbl} SET ${fields};`;
+  async update(data, where, options, return_back) {
+    const set = this.prepare_set(data);
+    where   = this.prepare_where(where);
+    if (is.boolean(options)) {
+      return_back = options;
+      options     = {};
+    } else {
+      options = options || {};
+    }
+
+    const order = is.string(options.order) ? ` ORDER BY ${options.order}` : '';
+    const limit = is.number(options.limit) ? ` LIMIT ${options.limit}` : '';
+
+    const tbl   = this.table_name;
+    const query = `UPDATE ${tbl} SET ${set}${where}${order}${limit};`;
+    await this.exec(query, [...set.values, ...where.values]);
+
+    if (return_back) {
+      let {fields} = options;
+      fields = fields ? this.prepare_fields(fields) : '*';
+      const query = `SELECT ${fields} FROM ${tbl}${where}${order}${limit};`;
+      const {results} = await this.exec(query, where.values);
+      return options.limit === 1 ? results[0] : results;
+    }
   }
-  */
+
+  update_first(data, where, options, return_back) {
+    return this.update(data, where, {...options, limit: 1}, return_back);
+  }
 
   async delete(where, options = {}) {
     where = this.prepare_where(where);
-    const {values} = where;
-    where = where.query;
 
-    let order = '';
-    if (is.string(options.order)) {
-      order = ` ORDER BY ${options.order}`;
-    }
-
-    let limit = '';
-    if (is.number(options.limit)) {
-      limit = ` LIMIT ${options.limit}`;
-    }
-
-    const tbl = this.table_name;
-    await this.exec(`DELETE FROM ${tbl}${where}${order}${limit};`, values);
-  }
-
-  async delete_first(where, options = {}) {
-    where = this.prepare_where(where);
-    const {values} = where;
-    where = where.query;
-
-    let order = '';
-    if (is.string(options.order)) {
-      order = ` ORDER BY ${options.order}`;
-    }
+    const order = is.string(options.order) ? ` ORDER BY ${options.order}` : '';
+    const limit = is.number(options.limit) ? ` LIMIT ${options.limit}` : '';
 
     const tbl   = this.table_name;
-    const limit = ` LIMIT 1`;
-    await this.exec(`DELETE FROM ${tbl}${where}${order}${limit};`, values);
+    const query = `DELETE FROM ${tbl}${where}${order}${limit};`;
+    await this.exec(query, where.values);
+  }
+
+  delete_first(where, options) {
+    return this.delete(where, {...options, limit: 1});
   }
 
   prepare_fields(fields) {
@@ -227,46 +237,43 @@ class JeefoMySQLConnection {
 
   prepare_set(data) {
     const values = [];
-    const fields = Object.keys(data).map(key => {
-      let value = data[key];
+    const fields = [];
+    for (let [key, value] of Object.entries(data)) {
       if (is.object(value) && !(value instanceof Date)) {
         value = JSON.stringify(value);
       }
       values.push(value);
-      return `${mysql.escapeId(key)} = ?`;
-    }).join(", ");
+      fields.push(`${mysql.escapeId(key)} = ?`);
+    }
 
-    return {fields, values};
+    return new JeefoMysqlQuery(fields.join(", "), values);
   }
 
   prepare_where(where) {
-    const values = [];
-    if (!where) return {query: '', values};
+    if (!where) return new JeefoMysqlQuery('', []);
 
-    const conditions = Object.keys(where).map(key => {
-      let value = where[key];
+    const values     = [];
+    const conditions = [];
+
+    for (let [key, value] of Object.entries(where)) {
       if (is.object(value) && !(value instanceof Date)) {
         value = JSON.stringify(value);
       }
       values.push(value);
-      return `${mysql.escapeId(key)} = ?`;
-    }).join(" AND ");
+      conditions.push(`${mysql.escapeId(key)} = ?`);
+    }
 
-    const query = ` WHERE ${conditions}`;
-    return {query, values};
+    return new JeefoMysqlQuery(` WHERE ${conditions.join(" AND ")}`, values);
   }
 
-  async first(where, options) {
-    options = Object.assign({}, options, {limit: 1});
-    return await this.select(where, options);
+  first(where, options) {
+    return this.select(where, {...options, limit: 1});
   }
 
   async reset() {
     const tbl = this.table_name;
     const {results: [result]} = await this.exec(`SHOW CREATE TABLE ${tbl}`);
-    const keys = Object.keys(result);
-    for (const key of keys) {
-      const s = result[key];
+    for (const [, s] of Object.entries(result)) {
       if (typeof s === "string" && s.startsWith("CREATE TABLE")) {
         const query = s.replace(AUTO_INC_REGEXP, "AUTO_INCREMENT=0");
 

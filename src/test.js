@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : test.js
 * Created at  : 2021-10-09
-* Updated at  : 2021-10-10
+* Updated at  : 2022-03-24
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -17,33 +17,44 @@
 
 const mysql = require("./index.js");
 
-function assert(condition, message) {
-    if (condition) {
-        console.log(`ASSERT '${message}' passed.`);
-    } else {
-        throw new Error(`ASSERT '${message}' failed.`);
-    }
-}
+const assert = (condition, message) => {
+  if (condition) return console.log(`ASSERT '${message}' passed.`);
+  throw new Error(`ASSERT '${message}' failed.`);
+};
 
 (async () => {
-    await mysql.config_load(`${process.env.HOME}/configs/database.json`);
-    const process_db = mysql("processes");
+  const config = require(`${process.env.HOME}/configs/database.json`);
+  config.idle_timeout = 0;
+  await mysql.config(config);
+  const process_db = mysql("processes");
 
-    await process_db.connect();
+  await process_db.insert({
+    pid     : 321,
+    command : "ffmpeg something something".split(' '),
+  });
 
-    await process_db.reset();
+  await process_db.reset();
+  await process_db.insert({
+    pid     : 123,
+    command : "ffmpeg something something".split(' '),
+  });
 
-    await process_db.insert({
-        pid     : 123,
-        command : "ffmpeg something something".split(' '),
-    });
+  const results = await process_db.get_all();
+  let total = await process_db.total();
+  assert(results.length === total, "results.length === total");
 
-    const results = await process_db.get_all();
-    let total = await process_db.total();
-    assert(results.length === total, "results.length === total");
+  const record = await process_db.first({pid: 123});
+  assert(record !== null, "record !== null");
 
-    await process_db.delete_all();
-    total = await process_db.total();
-    assert(total === 0, "total length = 0");
+  const r = await process_db.update_first({
+    command: 'node index.js'
+  }, {pid: 123 }, {fields: ["id", "command"]}, true);
 
-})().catch(console.error.bind(console));
+  assert(r !== null, "r !== null");
+  assert(record.id === r.id, "record.id !== r.id");
+  assert(r.command === "node index.js", 'r.command === "node index.js"');
+
+  await process_db.delete_all();
+  total = await process_db.total();
+  assert(total === 0, "total length = 0");
+})();
