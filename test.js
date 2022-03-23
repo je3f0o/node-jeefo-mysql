@@ -15,7 +15,7 @@
 
 // ignore:end
 
-const mysql = require("./index.js");
+const mysql = require("./src/index.js");
 
 const assert = (condition, message) => {
   if (condition) return console.log(`ASSERT '${message}' passed.`);

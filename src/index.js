@@ -200,7 +200,7 @@ class JeefoMySQLConnection {
 
     const tbl   = this.table_name;
     const query = `UPDATE ${tbl} SET ${set}${where}${order}${limit};`;
-    await this.exec(query, [...set.values, ...where.values]);
+    const res = await this.exec(query, [...set.values, ...where.values]);
 
     if (return_back) {
       let {fields} = options;
@@ -209,13 +209,15 @@ class JeefoMySQLConnection {
       const {results} = await this.exec(query, where.values);
       return options.limit === 1 ? results[0] : results;
     }
+
+    return res;
   }
 
   update_first(data, where, options, return_back) {
     return this.update(data, where, {...options, limit: 1}, return_back);
   }
 
-  async delete(where, options = {}) {
+  delete(where, options = {}) {
     where = this.prepare_where(where);
 
     const order = is.string(options.order) ? ` ORDER BY ${options.order}` : '';
@@ -223,7 +225,7 @@ class JeefoMySQLConnection {
 
     const tbl   = this.table_name;
     const query = `DELETE FROM ${tbl}${where}${order}${limit};`;
-    await this.exec(query, where.values);
+    return this.exec(query, where.values);
   }
 
   delete_first(where, options) {
