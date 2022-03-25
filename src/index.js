@@ -241,11 +241,15 @@ class JeefoMySQLConnection {
     const values = [];
     const fields = [];
     for (let [key, value] of Object.entries(data)) {
-      if (is.object(value) && !(value instanceof Date)) {
-        value = JSON.stringify(value);
+      if (value === null) {
+        fields.push(`${mysql.escapeId(key)} = NULL`);
+      } else {
+        if (is.object(value) && !(value instanceof Date)) {
+          value = JSON.stringify(value);
+        }
+        values.push(value);
+        fields.push(`${mysql.escapeId(key)} = ?`);
       }
-      values.push(value);
-      fields.push(`${mysql.escapeId(key)} = ?`);
     }
 
     return new JeefoMysqlQuery(fields.join(", "), values);
