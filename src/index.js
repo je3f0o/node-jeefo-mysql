@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2021-10-09
-* Updated at  : 2022-03-24
+* Updated at  : 2022-03-25
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -258,11 +258,17 @@ class JeefoMySQLConnection {
     const conditions = [];
 
     for (let [key, value] of Object.entries(where)) {
-      if (is.object(value) && !(value instanceof Date)) {
-        value = JSON.stringify(value);
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => '?').join(", ");
+        values.push(...value);
+        conditions.push(`${mysql.escapeId(key)} IN(${placeholders})`);
+      } else {
+        if (is.object(value) && !(value instanceof Date)) {
+          value = JSON.stringify(value);
+        }
+        values.push(value);
+        conditions.push(`${mysql.escapeId(key)} = ?`);
       }
-      values.push(value);
-      conditions.push(`${mysql.escapeId(key)} = ?`);
     }
 
     return new JeefoMysqlQuery(` WHERE ${conditions.join(" AND ")}`, values);

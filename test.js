@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : test.js
 * Created at  : 2021-10-09
-* Updated at  : 2022-03-24
+* Updated at  : 2022-03-25
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -57,4 +57,6 @@ const assert = (condition, message) => {
   await process_db.delete_all();
   total = await process_db.total();
   assert(total === 0, "total length = 0");
+
+  console.log(process_db.prepare_where({id: [1,2,3,4,5]}));
 })();
