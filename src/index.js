@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2021-10-09
-* Updated at  : 2022-03-25
+* Updated at  : 2022-03-26
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -262,7 +262,9 @@ class JeefoMySQLConnection {
     const conditions = [];
 
     for (let [key, value] of Object.entries(where)) {
-      if (Array.isArray(value)) {
+      if (value === null) {
+        conditions.push(`${mysql.escapeId(key)} IS NULL`);
+      } else if (Array.isArray(value)) {
         const placeholders = value.map(() => '?').join(", ");
         values.push(...value);
         conditions.push(`${mysql.escapeId(key)} IN(${placeholders})`);
