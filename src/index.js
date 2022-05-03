@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2021-10-09
-* Updated at  : 2022-03-26
+* Updated at  : 2022-05-04
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -79,6 +79,14 @@ class JeefoMysqlQuery {
 
   toString() { return this.query; }
 }
+
+const limit_query = options => {
+  if (is.number(options.limit)) {
+    const offset = is.number(options.offset) ? options.offset : 0;
+    return ` LIMIT ${offset}, ${options.limit}`;
+  }
+  return '';
+};
 
 class JeefoMySQLConnection {
   constructor(table_name, config) {
@@ -163,7 +171,7 @@ class JeefoMySQLConnection {
     where = this.prepare_where(where);
 
     const order = is.string(options.order) ? ` ORDER BY ${options.order}` : '';
-    const limit = is.number(options.limit) ? ` LIMIT ${options.limit}` : '';
+    const limit = limit_query(options);
 
     const tbl       = this.table_name;
     const query     = `SELECT ${fields} FROM ${tbl}${where}${order}${limit};`;
@@ -196,7 +204,7 @@ class JeefoMySQLConnection {
     }
 
     const order = is.string(options.order) ? ` ORDER BY ${options.order}` : '';
-    const limit = is.number(options.limit) ? ` LIMIT ${options.limit}` : '';
+    const limit = limit_query(options);
 
     const tbl   = this.table_name;
     const query = `UPDATE ${tbl} SET ${set}${where}${order}${limit};`;
@@ -221,7 +229,7 @@ class JeefoMySQLConnection {
     where = this.prepare_where(where);
 
     const order = is.string(options.order) ? ` ORDER BY ${options.order}` : '';
-    const limit = is.number(options.limit) ? ` LIMIT ${options.limit}` : '';
+    const limit = limit_query(options);
 
     const tbl   = this.table_name;
     const query = `DELETE FROM ${tbl}${where}${order}${limit};`;
