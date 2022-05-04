@@ -229,7 +229,7 @@ class JeefoMySQLConnection {
     where = this.prepare_where(where);
 
     const order = is.string(options.order) ? ` ORDER BY ${options.order}` : '';
-    const limit = limit_query(options);
+    const limit = is.number(options.limit) ? ` LIMIT ${options.limit}` : '';
 
     const tbl   = this.table_name;
     const query = `DELETE FROM ${tbl}${where}${order}${limit};`;
