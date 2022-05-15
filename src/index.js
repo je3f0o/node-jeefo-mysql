@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2021-10-09
-* Updated at  : 2022-05-04
+* Updated at  : 2022-05-16
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -204,7 +204,7 @@ class JeefoMySQLConnection {
     }
 
     const order = is.string(options.order) ? ` ORDER BY ${options.order}` : '';
-    const limit = limit_query(options);
+    const limit = is.number(options.limit) ? ` LIMIT ${options.limit}` : '';
 
     const tbl   = this.table_name;
     const query = `UPDATE ${tbl} SET ${set}${where}${order}${limit};`;

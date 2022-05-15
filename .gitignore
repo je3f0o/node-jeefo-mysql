@@ -3,3 +3,7 @@ node_modules
 
 # Temp fodler
 .temp_publish_dir
+
+# Vim swap files
+*.swp
+*.swo
