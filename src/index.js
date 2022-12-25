@@ -1,7 +1,7 @@
 /* -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 * File Name   : index.js
 * Created at  : 2021-10-09
-* Updated at  : 2022-05-16
+* Updated at  : 2022-12-25
 * Author      : jeefo
 * Purpose     :
 * Description :
@@ -221,8 +221,10 @@ class JeefoMySQLConnection {
     return res;
   }
 
-  update_first(data, where, options, return_back) {
-    return this.update(data, where, {...options, limit: 1}, return_back);
+  async update_first(data, where, options, return_back) {
+    options = {...options, limit: 1};
+    const result = await this.update(data, where, options, return_back);
+    return return_back ? result : result.results;
   }
 
   delete(where, options = {}) {

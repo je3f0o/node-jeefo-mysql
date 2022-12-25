@@ -1,40 +1,40 @@
 {
-    "name": "jeefo-mysql",
-    "version": "0.0.56",
-    "description": "Very simple MySQL connection instances for each table. I had annoyed enough for MySQL Deadlocks.",
-    "main": "index.js",
-    "license": "MIT",
-    "author": {
-        "name": "je3f0o"
-    },
-    "scripts": {
-        "save": "git add . && git c \"`date`\" && git p",
-        "save_version": "git add . && git c \"v$npm_package_version\" && git p",
-        "jeefo_publish": "node node_modules/@jeefo/publish/publish.js"
-    },
-    "homepage": "https://github.com/~je3f0o/node-jeefo-mysql",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/~je3f0o/node-jeefo-mysql.git"
-    },
-    "keywords": [
-        "jeefo",
-        "mysql"
-    ],
-    "dependencies": {
-        "@jeefo/fs": "^0.0.10",
-        "@jeefo/utils": "^0.0.12",
-        "mysql": "^2.18.1"
-    },
-    "gitHead": "af1ac5be8efc56b0bb67c83a2942e6dba7afc302",
-    "bugs": {
-        "url": "https://github.com/~je3f0o/node-jeefo-mysql/issues"
-    },
-    "readme": "ERROR: No README data found!",
-    "_id": "jeefo-mysql@0.0.3",
-    "_shasum": "2f5d3e9a5458df0a7471f27ed09580798ff44a36",
-    "_from": "jeefo-mysql@*",
-    "devDependencies": {
-        "@jeefo/publish": "^0.0.31"
-    }
+  "name": "jeefo-mysql",
+  "version": "0.0.57",
+  "description": "Very simple MySQL connection instances for each table. I had annoyed enough for MySQL Deadlocks.",
+  "main": "index.js",
+  "license": "MIT",
+  "author": {
+    "name": "je3f0o"
+  },
+  "scripts": {
+    "save": "git add . && git c \"`date`\" && git p",
+    "save_version": "git add . && git c \"v$npm_package_version\" && git p",
+    "jeefo_publish": "node node_modules/@jeefo/publish/publish.js"
+  },
+  "homepage": "https://github.com/~je3f0o/node-jeefo-mysql",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/~je3f0o/node-jeefo-mysql.git"
+  },
+  "keywords": [
+    "jeefo",
+    "mysql"
+  ],
+  "dependencies": {
+    "@jeefo/fs": "^0.0.11",
+    "@jeefo/utils": "^0.0.18",
+    "mysql": "^2.18.1"
+  },
+  "gitHead": "af1ac5be8efc56b0bb67c83a2942e6dba7afc302",
+  "bugs": {
+    "url": "https://github.com/~je3f0o/node-jeefo-mysql/issues"
+  },
+  "readme": "ERROR: No README data found!",
+  "_id": "jeefo-mysql@0.0.3",
+  "_shasum": "2f5d3e9a5458df0a7471f27ed09580798ff44a36",
+  "_from": "jeefo-mysql@*",
+  "devDependencies": {
+    "@jeefo/publish": "^0.0.31"
+  }
 }
